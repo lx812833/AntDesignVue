@@ -14,6 +14,7 @@ const router = new Router({
     {
       path: "/user",
       // component: { render: h => h("router-view") },  使用render函数加载router-view
+      hideInMenu: true, // 添加标志位，在侧边菜单栏渲染时过滤掉
       component: () => import(/* webpackChunkName: "layout" */ "./Layouts/UserLayout.vue"),
       children: [
         {
@@ -44,11 +45,13 @@ const router = new Router({
         {
           path: "/dashboard",
           name: "dashboard",
+          meta: { icon: "dashboard", title: "仪表盘"}, // 设置图标与名称
           component: { render: h => h("router-view") },
           children: [
             {
               path: "/dashboard/analysis",
               name: "analysis",
+              meta: {title: "分析页"},
               component: () => import(/* webpackChunkName: "dashboard" */ "./views/Dashboard/Analysis")
             }
           ]
@@ -58,15 +61,19 @@ const router = new Router({
           path: "/form",
           name: "form",
           component: { render: h => h("router-view") },
+          meta: { icon: "form", title: "表单"},
           children: [
             {
               path: "/form/basic-form",
               name: "basicform",
+              meta: {title: "基础表单"},
               component: () => import(/* webpackChunkName: "form" */ "./views/Forms/BasicForm")
             },
             {
               path: "/form/step-form",
               name: "stepform",
+              hideChildInMenu: true,
+              meta: {title: "分布表单"},
               component: () => import(/* webpackChunkName: "form" */ "./views/Forms/StepForm"),
               children: [
                 {
@@ -97,10 +104,13 @@ const router = new Router({
     {
       path: "*",
       name: "404",
+      hideInMenu: true,
       component: NotFound
     }
   ]
 });
+
+// 在路由守卫中判断路由是否有权限
 
 router.beforeEach((to, from, next) => {
   // ${//to and from are Route Object,next() must be called to resolve the hook}
