@@ -45,13 +45,13 @@ const router = new Router({
         {
           path: "/dashboard",
           name: "dashboard",
-          meta: { icon: "dashboard", title: "仪表盘"}, // 设置图标与名称
+          meta: { icon: "dashboard", title: "仪表盘" }, // 设置图标与名称
           component: { render: h => h("router-view") },
           children: [
             {
               path: "/dashboard/analysis",
               name: "analysis",
-              meta: {title: "分析页"},
+              meta: { title: "分析页" },
               component: () => import(/* webpackChunkName: "dashboard" */ "./views/Dashboard/Analysis")
             }
           ]
@@ -61,19 +61,19 @@ const router = new Router({
           path: "/form",
           name: "form",
           component: { render: h => h("router-view") },
-          meta: { icon: "form", title: "表单"},
+          meta: { icon: "form", title: "表单" },
           children: [
             {
               path: "/form/basic-form",
               name: "basicform",
-              meta: {title: "基础表单"},
+              meta: { title: "基础表单" },
               component: () => import(/* webpackChunkName: "form" */ "./views/Forms/BasicForm")
             },
             {
               path: "/form/step-form",
               name: "stepform",
               hideChildInMenu: true,
-              meta: {title: "分布表单"},
+              meta: { title: "分布表单" },
               component: () => import(/* webpackChunkName: "form" */ "./views/Forms/StepForm"),
               children: [
                 {
@@ -113,7 +113,6 @@ const router = new Router({
 // 在路由守卫中判断路由是否有权限
 
 router.beforeEach((to, from, next) => {
-  // ${//to and from are Route Object,next() must be called to resolve the hook}
   // 当切换主题时不进行显示
   if (to.path != from.path) {
     NProgress.start();
@@ -122,7 +121,6 @@ router.beforeEach((to, from, next) => {
 })
 
 router.afterEach(() => {
-  // ${//these hooks do not get a next function and cannot affect the navigation}
   NProgress.done();
 })
 
