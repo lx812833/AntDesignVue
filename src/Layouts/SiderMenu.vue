@@ -12,10 +12,17 @@
           :key="item.path"
           @click="() => $router.push({ path: item.path, query: $route.query })"
         >
-          <a-icon v-if="item.meta.icon" :type="item.meta.icon"/>
+          <a-icon
+            v-if="item.meta.icon"
+            :type="item.meta.icon"
+          />
           <span>{{ item.meta.title }}</span>
         </a-menu-item>
-        <sub-menu v-else :menu-info="item" :key="item.path"/>
+        <sub-menu
+          v-else
+          :menu-info="item"
+          :key="item.path"
+        />
       </template>
     </a-menu>
   </div>
@@ -27,6 +34,7 @@
  * SubMenu1.vue https://github.com/vueComponent/ant-design-vue/blob/master/components/menu/demo/SubMenu1.vue
  * */
 import SubMenu from "./SubMenu";
+import { check } from "../utils/auth";
 export default {
   props: {
     theme: {
@@ -62,7 +70,11 @@ export default {
     getMenuData(routes = [], parentKeys = [], selectedKey) {
       // 将路由的数据生成一个菜单
       const menuData = [];
-      routes.forEach(item => {
+      for (let item of routes) {
+        // 当没有相对应权限时，左侧导航栏隐藏对应模块
+        if (item.meta && item.meta.authority && !check(item.meta.authority)) {
+          break;
+        }
         if (item.name && !item.hideInMenu) {
           this.openKeysMap[item.path] = parentKeys;
           this.selectedKeysMap[item.path] = [selectedKey || item.path]; // 路由
@@ -81,16 +93,12 @@ export default {
             );
           }
           menuData.push(newItem);
-        } else if (
-          !item.hideInMenu &&
-          !item.hideChildInMenu &&
-          item.children
-        ) {
+        } else if (!item.hideInMenu && !item.hideChildInMenu && item.children) {
           menuData.push(
             ...this.getMenuData(item.children, [...parentKeys, item.path])
           );
         }
-      });
+      }
       return menuData;
     }
   }

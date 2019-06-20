@@ -1,8 +1,14 @@
 import Vue from "vue";
 import Router from "vue-router";
+import findLast from "lodash/findLast";
+// Lodash 通过降低 array、number、objects、string 等等的使用难度从而让 JavaScript 变得更简单。
+// 是JavaScript实用工具库
 import NProgress from "nprogress";
 import "nprogress/nprogress.css";
 import NotFound from "./views/404";
+import Forbidden from "./views/403"
+import { check, isLogin } from "./utils/auth"
+import { notification } from "ant-design-vue";
 
 
 Vue.use(Router);
@@ -35,6 +41,7 @@ const router = new Router({
     },
     {
       path: "/",
+      meta: { authority: ["user", "admin"] },  // 设置访问权限
       component: () => import(/* webpackChunkName: "layout" */ "./Layouts/BasicLayout.vue"),
       children: [
         // dashboard 仪表盘
@@ -61,7 +68,7 @@ const router = new Router({
           path: "/form",
           name: "form",
           component: { render: h => h("router-view") },
-          meta: { icon: "form", title: "表单" },
+          meta: { icon: "form", title: "表单", authority: ["admin"] },
           children: [
             {
               path: "/form/basic-form",
@@ -102,6 +109,12 @@ const router = new Router({
       ]
     },
     {
+      path: "/403",
+      name: "403",
+      hideInMenu: true,
+      component: Forbidden
+    },
+    {
       path: "*",
       name: "404",
       hideInMenu: true,
@@ -116,6 +129,25 @@ router.beforeEach((to, from, next) => {
   // 当切换主题时不进行显示
   if (to.path != from.path) {
     NProgress.start();
+  }
+  // 在路由守卫中对访问权限进行判断
+  const record = findLast(to.matched, record => record.meta.authority)
+  console.log(record)
+  if (record && !check(record.meta.authority)) {  // 判断是否有登录权限
+    if (!isLogin() && to.path !== "/user/login") {
+      next({
+        path: "user/login"
+      })
+    } else if (to.path !== "/403") {
+      notification.error({
+        message: '403',
+        description: '您没有访问权限，请联系管理员',
+      });
+      next({
+        path: "/403"
+      })
+    }
+    NProgress.done()
   }
   next();
 })

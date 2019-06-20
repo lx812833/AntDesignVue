@@ -1,14 +1,15 @@
 // 权限校验
 
 export function getCurrentAuthority() {
-    return ['admin']
+    return ['admin']   // 返回用户权限
 }
 
 export function check(authority) {
     const current = getCurrentAuthority()
-    return current.some(item => authority.include(item))
+    return current.some(item => authority.includes(item))  // 权限存在返回true
 }
 
+// 判断登录权限
 export function isLogin() {
     const current = getCurrentAuthority()
     return current && current[0] != 'guest'
