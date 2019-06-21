@@ -99,6 +99,141 @@ export default router
 **`$router.options.routes`** 获取路由配置信息
 **`$route.matched`** 返回当前路由匹配到的组件类
 
+#### 权限校验
+
+权限校验是一个中后台十分重要的功能，根据权限来渲染左侧导航栏或者其他页面。
+
+##### 使用路由进行权限校验
+
+1. 建立`utils`文件夹，创建`auth.js`
+    
+    ```python    
+    // 权限校验
+    export function getCurrentAuthority() {
+      return ['admin'] // 设置用户权限，以后会根据接口来获取权限
+    }
+    
+    export function check(authority) {
+      const current = getCurrentAuthority()
+      return current.some(item => authority.includes(item)) // 权限存在返回true
+    }
+    
+    // 判断登录权限
+    export function isLogin() {
+      const current = getCurrentAuthority()
+      return current && current[0] != 'guest'
+    }
+    ```
+2. 在`router.js`路由守卫中对访问权限进行判断，并且在 `routes`中设置`meta`来设置访问权限
+
+    ```python
+    meta: { icon: "form", title: "表单", authority: ["admin"] },
+    ```
+    
+    ```python
+    router.beforeEach((to, from, next) => {
+      // 当切换主题时不进行显示
+      if (to.path != from.path) {
+          NProgress.start();
+      }
+        
+      // 在路由守卫中对访问权限进行判断
+      const record = findLast(to.matched, record => record.meta.authority)
+      console.log(record)
+      if (record && !check(record.meta.authority)) { // 判断是否有登录权限
+        if (!isLogin() && to.path !== "/user/login") {
+          next({
+              path: "user/login"
+          })
+        } else if (to.path !== "/403") {
+            notification.error({
+              message: '403',
+              description: '您没有访问权限，请联系管理员',
+            });
+            next({
+              path: "/403"
+            })
+          }
+        NProgress.done()
+      }
+      next();
+    })
+    ```
+
+3. 在`Layouts/SiderMenu.vue` 中进行渲染处理
+
+##### 使用函数式组件进行权限校验
+
+对于页面右侧设置按钮，则可利用另一种权限校验方法来进行设置。
+
+1. 创建`components/Authorized.vue`,创建函数式权限校验组件
+    
+    ```python
+    <script>
+    import { check } from "../utils/auth";
+    export default {
+      // 函数式权限校验组件
+      functional: true,
+      // functional 开关，设置为 true 后，就可以让组件变为无状态、无实例的函数化组件
+      props: {
+        authority: {
+          type: Array,
+          required: true
+        }
+      },
+      render(h, context) {
+        const { props, scopedSlots } = context;
+        return check(props.authority) ? scopedSlots.default() : null;
+      }
+    };
+    </script>
+    ```
+2. 在 `main.js` 中将 `Authorized` 设置为全局权限校验组件
+    
+    ```python
+    import Authorized from "./components/Authorized"
+    Vue.component("Authorized", Authorized)
+    // 定义全局权限校验组件
+    ```
+3. 在`Layouts/BasicLayout.vue`中进行设置权限
+    
+    ```python
+    <Authorized :authority = "['admin']">
+      <SettingDrawer />
+    </Authorized>
+    ```
+
+##### 使用指令进行权限校验
+
+1. 创建`directives/auth.js` 
+    
+    ```python
+    // 利用指令来进行权限校验
+    import { check } from "../utils/auth"
+    function install(Vue, options = {}) {
+      Vue.directive(options.name || "auth", {
+        inserted(el, binding) {
+          if (!check(binding.value)) {
+            el.parentNode && el.parentNode.removeChild(el)
+          }
+        }
+      })
+    }
+    export default { install }
+    ```
+2. 在 `main.js` 中将 `Auth` 设置为全局权限校验指令
+    
+    ```python
+    // 使用指令进行权限校验
+    import Auth from "./directives/auth"
+    Vue.use(Auth)
+    ```
+ 3. 在`Layouts/BasicLayout.vue`中进行设置权限
+    
+    ```python
+    <a-icon  v-auth="['admin']" :type="collapsed ? 'menu-unfold' : 'menu-fold'" @click="collapsed = !collapsed" ></a-icon>
+    ```
+
 
 ### 插件
 
