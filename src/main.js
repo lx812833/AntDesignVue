@@ -2,6 +2,7 @@ import Vue from "vue";
 import App from "./App.vue";
 import router from "./router";
 import store from "./store";
+
 import {
   Button,
   Layout,
@@ -29,6 +30,15 @@ Vue.use(DatePicker)
   .use(Layout)
   .use(Icon)
   .use(Drawer);
+
+// 定义全局权限校验组件
+import Authorized from "./components/Authorized"
+Vue.component("Authorized", Authorized)
+
+// 使用指令进行权限校验
+import Auth from "./directives/auth"
+Vue.use(Auth)
+
 
 Vue.config.productionTip = false;
 
