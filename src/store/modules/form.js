@@ -3,12 +3,17 @@ import request from '../../utils/request'
 
 const state = {
     step: {
-        payAccount: "123456"
+        payAccount: "123456",
+        receiveAccount: {
+            type: "支付宝",
+            number: ""
+        }
     }
 };
 
 const actions = {
     async submitStepForm({ commit }, { payload }) {
+        console.log("dispatch触发的")
         await request({
             url: "/api/form",
             method: "POST",
@@ -21,6 +26,7 @@ const actions = {
 
 const mutations = {
     saveStepFormData(state, { payload }) {
+        console.log("commit触发的")
         state.step = {
             ...state.step,
             ...payload
