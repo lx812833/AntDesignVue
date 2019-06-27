@@ -39,6 +39,12 @@ Vue.component("Authorized", Authorized)
 import Auth from "./directives/auth"
 Vue.use(Auth)
 
+// 使用阿里IconFont定义404图标
+const IconFont = Icon.createFromIconfontCN({
+  scriptUrl: "//at.alicdn.com/t/font_638417_xpkeyfypy5.js"
+})
+
+Vue.component("IconFont", IconFont)
 
 Vue.config.productionTip = false;
 
