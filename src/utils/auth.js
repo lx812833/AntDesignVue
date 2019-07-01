@@ -1,7 +1,9 @@
 // 权限校验
+const currentAuth = ["admin"]
+export { currentAuth }
 
 export function getCurrentAuthority() {
-    return ['admin']   // 返回用户权限
+    return currentAuth   // 返回用户权限
 }
 
 export function check(authority) {

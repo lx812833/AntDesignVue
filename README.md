@@ -234,6 +234,102 @@ export default router
     <a-icon  v-auth="['admin']" :type="collapsed ? 'menu-unfold' : 'menu-fold'" @click="collapsed = !collapsed" ></a-icon>
     ```
 
+同时还需在`data`中定义：
+
+
+filedA: "",
+filedAStatus: "",
+filedAHelp: ""
+```
+使用`watch`监听器监听`filedA`变化
+
+```python
+watch: {
+    filedA(val) {
+        if (val.length <= 5) {
+            this.filedAStatus = "error";
+            this.filedAHelp = "必须大于5个字符";
+        } else {
+            this.filedAStatus = "";
+            this.filedAHelp = "";
+        }
+    }
+},
+```
+#### 使用阿里`IconFont`定义图标
+
+百度搜索`IconFont`， 将选择好的图标加入项目中，选择生成外部链接。最后在 **`main.js`** 定义为全局组件。
+
+```python
+const IconFont = Icon.createFromIconfontCN({
+  scriptUrl: "//at.alicdn.com/t/font_638417_xpkeyfypy5.js"
+})
+
+Vue.component("IconFont", IconFont)
+```
+最后在页面组件中使用，注意其 **`type`** 为所选图标icon
+
+```python
+<IconFont type="icon-404" />
+```
+
+#### `Echart`组件
+
+封装了`Echart`组件，可以完成大部分图标业务。
+
+```python
+<template>
+  <div ref="chartDOM"></div>
+</template>
+
+<script>
+import echarts from "echarts";
+import { addListener, removeListener } from "resize-detector";
+import debounce from "lodash/debounce";
+export default {
+  props: {
+    option: {
+      type: Object,
+      default: () => {}
+    }
+  },
+  watch: {
+    option(val) {
+      this.echart.setOption(val);
+    }
+    // 深度监听option
+    // option: {
+    // handler(val) {
+    // this.echart.setOption(val);
+    // },
+    // deep: true
+    // }
+  },
+  created() {
+    this.resize = debounce(this.resize, 300); // 防抖处理
+  },
+  mounted() {
+    this.renderChart();
+    addListener(this.$refs.chartDOM, this.resize); // 监听echart加载
+  },
+  methods: {
+    resize() {
+      this.echart.resize();
+    },
+    renderChart() {
+      this.echart = echarts.init(this.$refs.chartDOM);
+      this.echart.setOption(this.option);
+    }
+  },
+  beforeDestroy() {
+    removeListener(this.$refs.chartDOM, this.resize);
+    // 销毁echart实例，防止内存泄露
+    this.echart.dispose();
+    this.echart = null;
+  }
+};
+</script>
+```
 
 ### 插件
 
